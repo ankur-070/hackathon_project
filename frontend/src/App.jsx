@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import './App.css'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [items, setItems] = useState([]);
+  const [name, setName] = useState("");
+
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/items")
+      .then(res => setItems(res.data));
+  }, []);
+
+  const addItem = async () => {
+    const res = await axios.post("http://localhost:5000/api/items", { name });
+    setItems([...items, res.data]);
+    setName("");
+  };
+
+  const deleteItem = async (id) => {
+    await axios.delete(`http://localhost:5000/api/items/${id}`);
+    setItems(items.filter(i => i._id !== id));
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">MERN Hackathon Demo</h1>
+
+      <div className="my-4">
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="New item"
+          className="border p-2 mr-2"
+        />
+        <button onClick={addItem} className="bg-blue-500 text-white px-4 py-2 rounded">
+          Add
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+
+      <ul>
+        {items.map(i => (
+          <li key={i._id} className="flex justify-between my-2 border p-2 rounded">
+            {i.name}
+            <button onClick={() => deleteItem(i._id)} className="text-red-500">X</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
-export default App
+export default App;
